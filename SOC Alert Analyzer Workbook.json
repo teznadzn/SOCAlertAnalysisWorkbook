@@ -1,0 +1,340 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "crossComponentResources": [
+          "{Workspace}"
+        ],
+        "parameters": [
+          {
+            "id": "e8628bc3-0520-476d-89d8-fb7d6e47de6f",
+            "version": "KqlParameterItem/1.0",
+            "name": "Workspace",
+            "label": "Client",
+            "type": 5,
+            "isRequired": true,
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
+            "query": "resources | where type =~ 'Microsoft.operationsmanagement/solutions' | where name contains 'SecurityInsights' | project id = tostring(properties.workspaceResourceId)\r\n",
+            "crossComponentResources": [
+              "value::all"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": []
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources",
+            "value": [
+              "/subscriptions/e750034d-616b-4c1d-8ee0-86d82a3e5746/resourcegroups/sentinel/providers/microsoft.operationalinsights/workspaces/ibwc-monitoring-workspace",
+              "/subscriptions/193adb00-3bae-469e-b548-830a894810a0/resourcegroups/Quzara-monitoring/providers/Microsoft.OperationalInsights/workspaces/Quzara-Corporate",
+              "/subscriptions/8b75d79b-0f55-4766-8d72-a567d3dd8ae8/resourcegroups/sentinel/providers/microsoft.operationalinsights/workspaces/qarbonsentinel",
+              "/subscriptions/abf6253d-2b06-4b10-9630-ae8903cf0f39/resourcegroups/Privoro-Monitoring-RG/providers/Microsoft.OperationalInsights/workspaces/privoro-monitoring-workspace",
+              "/subscriptions/dc0a28e2-b9fb-47a9-859b-6ee986d7aff3/resourcegroups/MALEU2QuzaraRG/providers/Microsoft.OperationalInsights/workspaces/MALEU2QuzaraLA01",
+              "/subscriptions/fc4cd69c-863c-4643-a444-f3eb17c60a77/resourcegroups/RG-Sentinel/providers/Microsoft.OperationalInsights/workspaces/Log-Security",
+              "/subscriptions/75c1c1b5-962c-4cb8-b6fa-25c1f060bf46/resourcegroups/KMI-SRA-PROD-Monitoring/providers/Microsoft.OperationalInsights/workspaces/KMI-SRA-PROD-Monitoring-Workspace",
+              "/subscriptions/548d5169-6e8c-4ac0-8d3b-4425af765453/resourcegroups/DIFZ_Monitoring_Resource_Group/providers/Microsoft.OperationalInsights/workspaces/DIFZ-Monitoring-Workspace",
+              "/subscriptions/2977183b-e825-40ad-ba23-3d16ec5afb70/resourcegroups/Accrete_Monitoring-RG/providers/Microsoft.OperationalInsights/workspaces/accrete-monitoring-workspace"
+            ]
+          },
+          {
+            "id": "5f37ff0f-e18a-4651-b376-df68827afe33",
+            "version": "KqlParameterItem/1.0",
+            "name": "AlertName",
+            "type": 2,
+            "isRequired": true,
+            "multiSelect": true,
+            "quote": "'",
+            "delimiter": ",",
+            "query": "SecurityAlert\r\n| summarize count() by DisplayName\r\n| order by count_ desc\r\n| project-away count_",
+            "crossComponentResources": [
+              "{Workspace}"
+            ],
+            "typeSettings": {
+              "additionalResourceOptions": [
+                "value::all"
+              ],
+              "showDefault": false
+            },
+            "defaultValue": "value::all",
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces"
+          },
+          {
+            "id": "0825b455-c439-4de0-a8f4-21fe6f76bd33",
+            "version": "KqlParameterItem/1.0",
+            "name": "Timerange",
+            "type": 4,
+            "isRequired": true,
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 3600000
+                },
+                {
+                  "durationMs": 14400000
+                },
+                {
+                  "durationMs": 43200000
+                },
+                {
+                  "durationMs": 86400000
+                },
+                {
+                  "durationMs": 172800000
+                },
+                {
+                  "durationMs": 259200000
+                },
+                {
+                  "durationMs": 604800000
+                },
+                {
+                  "durationMs": 1209600000
+                },
+                {
+                  "durationMs": 2419200000
+                },
+                {
+                  "durationMs": 2592000000
+                },
+                {
+                  "durationMs": 5184000000
+                },
+                {
+                  "durationMs": 7776000000
+                }
+              ],
+              "allowCustom": true
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "value": {
+              "durationMs": 172800000
+            }
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "parameters - 0"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "SecurityAlert\r\n| where TimeGenerated >= ago(60d)\r\n| where AlertName in ({AlertName})\r\n| distinct AlertName, Provider = ProductComponentName, Tactics, Techniques, Description",
+        "size": 4,
+        "title": "Alert Details",
+        "timeContextFromParameter": "Timerange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspace}"
+        ],
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "Description",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "150ch"
+              }
+            }
+          ]
+        }
+      },
+      "name": "Alert Details"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "SecurityIncident\r\n| where Title in ({AlertName})\r\n| where Status == \"Closed\"\r\n| order by TimeGenerated desc\r\n| project Classification, Comment = ClassificationComment, Reason = ClassificationReason, IncidentNumber, Title\r\n",
+        "size": 0,
+        "showAnalytics": true,
+        "title": "SecurityIncident",
+        "timeContextFromParameter": "Timerange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspace}"
+        ],
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "IncidentNumber",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "20ch"
+              }
+            }
+          ]
+        }
+      },
+      "customWidth": "50",
+      "name": "query - 1",
+      "styleSettings": {
+        "maxWidth": "50"
+      }
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "SecurityIncident\r\n| where Title in ({AlertName})\r\n| where Status == \"Closed\"\r\n| order by TimeGenerated desc\r\n| summarize count() by Classification\r\n| render piechart with(title=\"Classifications\")\r\n",
+        "size": 0,
+        "title": "SecurityIncident Classifications",
+        "timeContextFromParameter": "Timerange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspace}"
+        ],
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "IncidentNumber",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "20ch"
+              }
+            }
+          ]
+        }
+      },
+      "customWidth": "20",
+      "name": "query - 1 - Copy",
+      "styleSettings": {
+        "maxWidth": "25"
+      }
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "SecurityIncident\r\n| where Title in ({AlertName})\r\n| where Status == \"Closed\"\r\n| order by TimeGenerated desc\r\n| summarize count() by ClassificationReason\r\n| render piechart with(title=\"Classifications\")\r\n",
+        "size": 0,
+        "title": "SecurityIncident ClassificationReason",
+        "timeContextFromParameter": "Timerange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspace}"
+        ],
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "IncidentNumber",
+              "formatter": 0,
+              "formatOptions": {
+                "customColumnWidthSetting": "20ch"
+              }
+            }
+          ]
+        }
+      },
+      "customWidth": "20",
+      "name": "SecurityIncident ClassificationReason",
+      "styleSettings": {
+        "maxWidth": "25"
+      }
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "SecurityAlert\r\n| where AlertName contains \"{AlertName}\"\r\n| extend EntitiesParsed = parse_json(Entities)\r\n| extend Account1 = tostring(EntitiesParsed[0].Name) \r\n| extend Account2 = tostring(EntitiesParsed[1].Name) \r\n| extend Account3 = tostring(EntitiesParsed[2].Name) \r\n| extend Account4 = tostring(EntitiesParsed[3].Name) \r\n| extend Account5 = tostring(EntitiesParsed[4].Name) \r\n| extend Account6 = tostring(EntitiesParsed[5].Name) \r\n| extend Account7 = tostring(EntitiesParsed[6].Name) \r\n| extend Account8 = tostring(EntitiesParsed[7].Name) \r\n| extend Account9 = tostring(EntitiesParsed[8].Name) \r\n| extend Account10 = tostring(EntitiesParsed[9].Name) \r\n| extend Accounts = pack_array(Account1, Account2, Account3, Account4, Account5, Account6, Account7, Account8, Account9, Account10)\r\n| mv-expand Accounts to typeof(string)\r\n| where Accounts != \"\" // Filter out empty values\r\n| summarize Count = count() by Accounts\r\n| order by Count desc",
+        "size": 0,
+        "title": "Account Entities",
+        "timeContextFromParameter": "Timerange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspace}"
+        ],
+        "visualization": "categoricalbar"
+      },
+      "name": "Account Entities"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "SecurityAlert\r\n| where AlertName in ({AlertName})\r\n| extend EntitiesParsed = parse_json(Entities)\r\n| extend Host1 = tostring(EntitiesParsed[0].HostName) \r\n| extend Host2 = tostring(EntitiesParsed[1].HostName) \r\n| extend Host3 = tostring(EntitiesParsed[2].HostName) \r\n| extend Host4 = tostring(EntitiesParsed[3].HostName) \r\n| extend Host5 = tostring(EntitiesParsed[4].HostName) \r\n| extend Host6 = tostring(EntitiesParsed[5].HostName) \r\n| extend Host7 = tostring(EntitiesParsed[6].HostName) \r\n| extend Host8 = tostring(EntitiesParsed[7].HostName) \r\n| extend Host9 = tostring(EntitiesParsed[8].HostName) \r\n| extend Host10 = tostring(EntitiesParsed[9].HostName) \r\n| extend Hosts = pack_array(Host1, Host2, Host3, Host4, Host5, Host6, Host7, Host8, Host9, Host10)\r\n| mv-expand Hosts to typeof(string)\r\n| where Hosts != \"\" // Filter out empty values\r\n| summarize Count = count() by Hosts\r\n| order by Count desc",
+        "size": 0,
+        "title": "Hosts Entities",
+        "timeContextFromParameter": "Timerange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspace}"
+        ],
+        "visualization": "categoricalbar"
+      },
+      "name": "Host Entities"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "SecurityAlert\r\n| where AlertName in ({AlertName})\r\n| extend EntitiesParsed = parse_json(Entities)\r\n| extend Address1 = tostring(EntitiesParsed[0].Address) \r\n| extend Address2 = tostring(EntitiesParsed[1].Address) \r\n| extend Address3 = tostring(EntitiesParsed[2].Address) \r\n| extend Address4 = tostring(EntitiesParsed[3].Address) \r\n| extend Address5 = tostring(EntitiesParsed[4].Address) \r\n| extend Address6 = tostring(EntitiesParsed[5].Address) \r\n| extend Address7 = tostring(EntitiesParsed[6].Address) \r\n| extend Address8 = tostring(EntitiesParsed[7].Address) \r\n| extend Address9 = tostring(EntitiesParsed[8].Address) \r\n| extend Address10 = tostring(EntitiesParsed[9].Address)\r\n| extend Addresses = pack_array(Address1, Address2, Address3, Address4, Address5, Address6, Address7, Address8, Address9, Address10)\r\n| mv-expand Addresses to typeof(string)\r\n| where Addresses != \"\" // Filter out empty values\r\n| summarize Count = count() by Addresses\r\n| order by Count desc",
+        "size": 0,
+        "title": "Address Entities",
+        "timeContextFromParameter": "Timerange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspace}"
+        ],
+        "visualization": "categoricalbar"
+      },
+      "name": "Address Entities"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "SecurityIncident\r\n| where parse_json(tostring(AdditionalData.alertProductNames))[0] == \"Microsoft Defender Advanced Threat Protection\"\r\n| summarize arg_max(CreatedTime, *) by IncidentNumber\r\n| project IncidentNumber, AlertIds \r\n| mv-expand AlertIds to typeof(string)\r\n| join kind=inner SecurityAlert on $left.AlertIds == $right.SystemAlertId\r\n| summarize arg_max(TimeGenerated, *) by SystemAlertId\r\n| mv-expand todynamic(Entities)\r\n| evaluate bag_unpack(Entities, 'Entity_')\r\n| extend Entity_ImageFileName = tostring(column_ifexists(\"Entity_ImageFile.Name\", \"\")),\r\n          Entity_ParentProcessName = tostring(column_ifexists(\"Entity_ParentProcess.ImageFile\", \"{}\")),\r\n          Entity_ParentProcessId = tostring(column_ifexists(\"Entity_ParentProcess.ProcessId\", \"\")),\r\n          Entity_Directory = tostring(column_ifexists(\"Entity_Directory\", \"\"))\r\n| extend Entity_ParentProcessName = tostring(parse_json(Entity_ParentProcessName).Name),\r\n          Entity_FileHashes = todynamic(column_ifexists(\"Entity_FileHashes\", dynamic([])))\r\n| mv-expand Entity_FileHashes\r\n| extend HashAlgorithm = tostring(Entity_FileHashes.Algorithm), \r\n          HashValue = tostring(Entity_FileHashes.Value)\r\n| extend SHA1 = iif(HashAlgorithm == \"SHA1\", HashValue, \"\"),\r\n          SHA256 = iif(HashAlgorithm == \"SHA256\", HashValue, \"\"),\r\n          MD5 = iif(HashAlgorithm == \"MD5\", HashValue, \"\")\r\n| extend ATP_InvestigationState = tostring(parse_json(ExtendedProperties).[\"MicrosoftDefenderAtp.InvestigationState\"])\r\n| summarize SHA1 = max(column_ifexists(\"SHA1\", \"\")), \r\n            SHA256 = max(column_ifexists(\"SHA256\", \"\")), \r\n            MD5 = max(column_ifexists(\"MD5\", \"\")) \r\n            by IncidentNumber, AlertIds, TimeGenerated, AlertName, CompromisedEntity, \r\n            Entity_Name = column_ifexists(\"Entity_Name\", \"\"), \r\n            Entity_Directory, Entity_HostName = column_ifexists(\"Entity_HostName\", \"\"), \r\n            Entity_FQDN = column_ifexists(\"Entity_FQDN\", \"\"), \r\n            Entity_LastExternalIpAddress = column_ifexists(\"Entity_LastExternalIpAddress\", \"\"), \r\n            Entity_LastIpAddress = column_ifexists(\"Entity_LastIpAddress\", \"\"), \r\n            Entity_LastSeen = column_ifexists(\"Entity_LastSeen\", \"\"), \r\n            Entity_OnboardingStatus = column_ifexists(\"Entity_OnboardingStatus\", \"\"), \r\n            Entity_OSFamily = column_ifexists(\"Entity_OSFamily\", \"\"), \r\n            Entity_OSVersion = column_ifexists(\"Entity_OSVersion\", \"\"), \r\n            LoggedOnUsers = tostring((column_ifexists(tostring(\"LoggedOnUsers\"), \"\"))), \r\n            Entity_RiskScore = column_ifexists(\"Entity_RiskScore\", \"\"), \r\n            Entity_Sid = column_ifexists(\"Entity_Sid\", \"\"), \r\n            Entity_UserPrincipalName = column_ifexists(\"Entity_UserPrincipalName\", \"\"), \r\n            Entity_CommandLine = column_ifexists(\"Entity_CommandLine\", \"\"), \r\n            Entity_ImageFileName, \r\n            Entity_ProcessId = column_ifexists(\"Entity_ProcessId\", \"\"), \r\n            Entity_ParentProcessName, \r\n            Entity_ParentProcessId, \r\n            ATP_InvestigationState\r\n| extend TimeGenerated = TimeGenerated, AlertName = AlertName, CompromisedEntity = CompromisedEntity, ATP_InvestigationState = ATP_InvestigationState, Name = Entity_Name, \r\n          Directory = Entity_Directory, SHA1 = SHA1, SHA256 = SHA256, MD5 = MD5, HostName = Entity_HostName, FQDN = Entity_FQDN, LastExternalIpAddress = Entity_LastExternalIpAddress, \r\n          LastIpAddress = Entity_LastIpAddress, LastSeen = Entity_LastSeen, OnboardingStatus = Entity_OnboardingStatus, OSFamily = Entity_OSFamily, \r\n          OSVersion = Entity_OSVersion, LoggedOnUsers, RiskScore = Entity_RiskScore, Sid = Entity_Sid, \r\n          UserPrincipalName = Entity_UserPrincipalName, CommandLine = Entity_CommandLine, ImageFileName = Entity_ImageFileName, \r\n          ProcessId = Entity_ProcessId, ParentProcessName = Entity_ParentProcessName, ParentProcessId = Entity_ParentProcessId\r\n| project TimeGenerated, AlertName, CompromisedEntity, ATP_InvestigationState, Name, \r\n          Directory, SHA1, SHA256, MD5, HostName, FQDN, LastExternalIpAddress, \r\n          LastIpAddress, LastSeen, OnboardingStatus, OSFamily, \r\n          OSVersion, LoggedOnUsers, RiskScore, Sid, \r\n          UserPrincipalName, CommandLine, ImageFileName, \r\n          ProcessId, ParentProcessName, ParentProcessId\r\n| where AlertName in ({AlertName})\r\n",
+        "size": 1,
+        "title": "XDR Alert Entities",
+        "timeContextFromParameter": "Timerange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspace}"
+        ]
+      },
+      "name": "XDR Alert Entities"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "let TimeInterval = 1d; // Adjust the time interval as necessary\r\nSecurityAlert\r\n| where TimeGenerated between ({Timerange:start} .. {Timerange:end})\r\n| where AlertName in ({AlertName})\r\n| summarize Count = count() by bin(TimeGenerated, TimeInterval)\r\n| union (\r\n    range TimeGenerated from {Timerange:start} to {Timerange:end} step TimeInterval\r\n    | extend Count = 0 // This creates the zero-value rows for dates without any logs\r\n)\r\n| summarize EventCount = sum(Count) by bin(TimeGenerated, TimeInterval)\r\n| render timechart",
+        "size": 0,
+        "title": "Alert triggers per day",
+        "timeContextFromParameter": "Timerange",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspace}"
+        ]
+      },
+      "name": "query - 2 - Copy"
+    }
+  ],
+  "fallbackResourceIds": [
+    "/subscriptions/193adb00-3bae-469e-b548-830a894810a0/resourcegroups/quzara-monitoring/providers/microsoft.operationalinsights/workspaces/quzara-corporate"
+  ],
+  "fromTemplateId": "sentinel-UserWorkbook",
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
